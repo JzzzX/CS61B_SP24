@@ -1,78 +1,148 @@
+package deque;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by hug on 2/4/2017. Methods are provided in the suggested order
- * that they should be completed.
+ * Array-based implementation of Deque61B interface.
  */
-public interface Deque61B<T> {
+public class ArrayDeque61B<T> implements Deque61B<T> {
+    private T[] items;
+    private int size;
+    private int nextFirst;
+    private int nextLast;
+    private static final int INITIAL_CAPACITY = 8;
+    private static final double MIN_USAGE_RATIO = 0.25;
 
-    /**
-     * Add {@code x} to the front of the deque. Assumes {@code x} is never null.
-     *
-     * @param x item to add
-     */
-    void addFirst(T x);
+    /** Creates an empty array deque. */
+    public ArrayDeque61B() {
+        items = (T[]) new Object[INITIAL_CAPACITY];
+        size = 0;
+        nextFirst = 4;
+        nextLast = 5;
+    }
 
-    /**
-     * Add {@code x} to the back of the deque. Assumes {@code x} is never null.
-     *
-     * @param x item to add
-     */
-    void addLast(T x);
+    /** Resizes the array to the target capacity. */
+    private void resize(int capacity) {
+        T[] newItems = (T[]) new Object[capacity];
+        int curr = plusOne(nextFirst);
+        for (int i = 0; i < size; i++) {
+            newItems[i] = items[curr];
+            curr = plusOne(curr);
+        }
+        items = newItems;
+        nextFirst = capacity - 1;
+        nextLast = size;
+    }
 
-    /**
-     * Returns a List copy of the deque. Does not alter the deque.
-     *
-     * @return a new list copy of the deque.
-     */
-    List<T> toList();
+    /** Returns the index immediately before the given index. */
+    private int minusOne(int index) {
+        return (index - 1 + items.length) % items.length;
+    }
 
-    /**
-     * Returns if the deque is empty. Does not alter the deque.
-     *
-     * @return {@code true} if the deque has no elements, {@code false} otherwise.
-     */
-    boolean isEmpty();
+    /** Returns the index immediately after the given index. */
+    private int plusOne(int index) {
+        return (index + 1) % items.length;
+    }
 
-    /**
-     * Returns the size of the deque. Does not alter the deque.
-     *
-     * @return the number of items in the deque.
-     */
-    int size();
+    @Override
+    public void addFirst(T x) {
+        if (size == items.length) {
+            resize(size * 2);
+        }
+        items[nextFirst] = x;
+        nextFirst = minusOne(nextFirst);
+        size += 1;
+    }
 
-    /**
-     * Remove and return the element at the front of the deque, if it exists.
-     *
-     * @return removed element, otherwise {@code null}.
-     */
-    T removeFirst();
+    @Override
+    public void addLast(T x) {
+        if (size == items.length) {
+            resize(size * 2);
+        }
+        items[nextLast] = x;
+        nextLast = plusOne(nextLast);
+        size += 1;
+    }
 
-    /**
-     * Remove and return the element at the back of the deque, if it exists.
-     *
-     * @return removed element, otherwise {@code null}.
-     */
-    T removeLast();
+    @Override
+    public List<T> toList() {
+        List<T> returnList = new ArrayList<>();
+        int curr = plusOne(nextFirst);
+        for (int i = 0; i < size; i++) {
+            returnList.add(items[curr]);
+            curr = plusOne(curr);
+        }
+        return returnList;
+    }
 
-    /**
-     * The Deque61B abstract data type does not typically have a get method,
-     * but we've included this extra operation to provide you with some
-     * extra programming practice. Gets the element, iteratively. Returns
-     * null if index is out of bounds. Does not alter the deque.
-     *
-     * @param index index to get
-     * @return element at {@code index} in the deque
-     */
-    T get(int index);
+    @Override
+    public boolean isEmpty() {
+        return size == 0;
+    }
 
-    /**
-     * This method technically shouldn't be in the interface, but it's here
-     * to make testing nice. Gets an element, recursively. Returns null if
-     * index is out of bounds. Does not alter the deque.
-     *
-     * @param index index to get
-     * @return element at {@code index} in the deque
-     */
-    T getRecursive(int index);
+    @Override
+    public int size() {
+        return size;
+    }
+
+    @Override
+    public T removeFirst() {
+        if (isEmpty()) {
+            return null;
+        }
+        nextFirst = plusOne(nextFirst);
+        T removed = items[nextFirst];
+        items[nextFirst] = null;
+        size -= 1;
+
+        if (items.length >= 16 && size < items.length * MIN_USAGE_RATIO) {
+            resize(items.length / 2);
+        }
+        return removed;
+    }
+
+    @Override
+    public T removeLast() {
+        if (isEmpty()) {
+            return null;
+        }
+        nextLast = minusOne(nextLast);
+        T removed = items[nextLast];
+        items[nextLast] = null;
+        size -= 1;
+
+        if (items.length >= 16 && size < items.length * MIN_USAGE_RATIO) {
+            resize(items.length / 2);
+        }
+        return removed;
+    }
+
+    @Override
+    public T get(int index) {
+        if (index >= size || index < 0) {
+            return null;
+        }
+        int curr = plusOne(nextFirst);
+        for (int i = 0; i < index; i++) {
+            curr = plusOne(curr);
+        }
+        return items[curr];
+    }
+
+    @Override
+    public T getRecursive(int index) {
+        if (index >= size || index < 0) {
+            return null;
+        }
+        return getRecursiveHelper(index, plusOne(nextFirst));
+    }
+
+    /** Helper method for getRecursive. */
+    private T getRecursiveHelper(int index, int curr) {
+        if (index == 0) {
+            return items[curr];
+        }
+        return getRecursiveHelper(index - 1, plusOne(curr));
+    }
 }
