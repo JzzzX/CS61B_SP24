@@ -47,34 +47,70 @@ public class RedBlackTree<T extends Comparable<T>> {
     /**
      * Flips the color of node and its children. Assume that NODE has both left
      * and right children
-     * @param node
+     * @param node The node whose color needs to be flipped along with its children.
      */
     void flipColors(RBTreeNode<T> node) {
-        // TODO: YOUR CODE HERE
+        node.isBlack = !node.isBlack; // Flip the color of current node
+        node.left.isBlack = !node.left.isBlack; // Flip the color of left child
+        node.right.isBlack = !node.right.isBlack; // Flip the color of right child
     }
 
     /**
      * Rotates the given node to the right. Returns the new root node of
      * this subtree. For this implementation, make sure to swap the colors
      * of the new root and the old root!
-     * @param node
-     * @return
+     *
+     * Example of right rotation:
+     *       N            L
+     *      /     =>    / \
+     *     L           A   N
+     *    /
+     *   A
+     *
+     * @param node The root node of the subtree to be rotated
+     * @return The new root node of the subtree after rotation (original left child)
      */
     RBTreeNode<T> rotateRight(RBTreeNode<T> node) {
-        // TODO: YOUR CODE HERE
-        return null;
+        // Save the new root (original left child)
+        RBTreeNode<T> newRoot = node.left;
+        // Move the new root's right subtree to the original root's left subtree
+        node.left = newRoot.right;
+        // Make the original root the right child of the new root
+        newRoot.right = node;
+
+        // Swap colors between the new and old roots
+        boolean oldColor = newRoot.isBlack;
+        newRoot.isBlack = node.isBlack;
+        node.isBlack = oldColor;
+
+        return newRoot;
     }
 
     /**
-     * Rotates the given node to the left. Returns the new root node of
+     * Rotates the given node to the lef    t. Returns the new root node of
      * this subtree. For this implementation, make sure to swap the colors
      * of the new root and the old root!
+     *
+     * Example of left rotation:
+     *      N                R
+     *     / \             / \
+     *    A   R    =>     N   C
+     *       / \         / \
+     *      B   C       A   B
+     *
      * @param node
      * @return
      */
     RBTreeNode<T> rotateLeft(RBTreeNode<T> node) {
-        // TODO: YOUR CODE HERE
-        return null;
+        RBTreeNode<T> newRoot = node.right;
+        node.right = newRoot.left;
+        newRoot.left = node;
+
+        boolean oldColor = newRoot.isBlack;
+        newRoot.isBlack = node.isBlack;
+        node.isBlack = oldColor;
+
+        return newRoot;
     }
 
     /**
@@ -100,22 +136,44 @@ public class RedBlackTree<T extends Comparable<T>> {
      * Inserts the given node into this Red Black Tree. Comments have been provided to help break
      * down the problem. For each case, consider the scenario needed to perform those operations.
      * Make sure to also review the other methods in this class!
-     * @param node
-     * @param item
-     * @return
+     *
+     * The balancing operations include:
+     *   1. Left rotation when there's a red right child but black left child
+     *   2. Right rotation when there are two consecutive red nodes on the left
+     *   3. Color flip when both children are red
+     *
+     * @param node The root of the subtree where insertion takes place
+     * @param item The item to be inserted
+     * @return The root of the modified subtree after insertion and balancing
      */
     private RBTreeNode<T> insert(RBTreeNode<T> node, T item) {
-        // TODO: Insert (return) new red leaf node.
+        // Base BST insert
+        if (node == null) {
+            return new RBTreeNode<>(false, item);
+        }
 
-        // TODO: Handle normal binary search tree insertion.
+        int cmp = item.compareTo(node.item);
+        if (cmp < 0) {
+            node.left = insert(node.left, item);
+        } else if (cmp > 0) {
+            node.right = insert(node.right, item);
+        }
 
-        // TODO: Rotate left operation
+        // Balance adjust
+        // case 1 RR LB, rotate left
+        if (isRed(node.right) && !isRed(node.left)) {
+            node = rotateLeft(node);
+        }
+        // case 2 LR LR, rotate right
+        if (isRed(node.left) && isRed(node.left.left)) {
+            node = rotateRight(node);
+        }
+        // case 3 LR RR, color flip
+        if (isRed(node.left) && isRed(node.right)) {
+            flipColors(node);
+        }
 
-        // TODO: Rotate right operation
-
-        // TODO: Color flip
-
-        return null; //fix this return statement
+        return node;
     }
 
 }
