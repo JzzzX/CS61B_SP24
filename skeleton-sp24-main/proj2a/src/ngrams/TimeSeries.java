@@ -1,7 +1,6 @@
 package ngrams;
 
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * An object for mapping a year number (e.g. 1996) to numerical data. Provides
@@ -30,15 +29,14 @@ public class TimeSeries extends TreeMap<Integer, Double> {
      */
     public TimeSeries(TimeSeries ts, int startYear, int endYear) {
         super();
-        // TODO: Fill in this constructor.
+        putAll(ts.subMap(startYear, true, endYear, true));
     }
 
     /**
      * Returns all years for this TimeSeries (in any order).
      */
     public List<Integer> years() {
-        // TODO: Fill in this method.
-        return null;
+        return new ArrayList<>(keySet());
     }
 
     /**
@@ -46,8 +44,7 @@ public class TimeSeries extends TreeMap<Integer, Double> {
      * Must be in the same order as years().
      */
     public List<Double> data() {
-        // TODO: Fill in this method.
-        return null;
+        return new ArrayList<>(values());
     }
 
     /**
@@ -60,8 +57,21 @@ public class TimeSeries extends TreeMap<Integer, Double> {
      * should store the value from the TimeSeries that contains that year.
      */
     public TimeSeries plus(TimeSeries ts) {
-        // TODO: Fill in this method.
-        return null;
+        // Create a new TimeSeries to store the result
+        TimeSeries result = new TimeSeries();
+
+        // Copy all data from current TimeSeries to result
+        result.putAll(this);
+
+        // Iterate through each year in the parameter TimeSeries
+        for (Integer year : ts.keySet()) { // ts.keySet()：获取ts中所有的年份集合
+            if (this.containsKey(year)) {
+                result.put(year, this.get(year) + ts.get(year));
+            } else {
+                result.put(year, ts.get(year));
+            }
+        }
+        return result;
     }
 
     /**
@@ -74,10 +84,16 @@ public class TimeSeries extends TreeMap<Integer, Double> {
      * If TS has a year that is not in this TimeSeries, ignore it.
      */
     public TimeSeries dividedBy(TimeSeries ts) {
-        // TODO: Fill in this method.
-        return null;
+        TimeSeries result = new TimeSeries();
+
+        for (Integer year : this.keySet()) {
+            if (!ts.containsKey(year)) {
+                throw new IllegalArgumentException();
+            }
+            result.put(year, this.get(year) / ts.get(year));
+        }
+
+        return result;
     }
 
-    // TODO: Add any private helper methods.
-    // TODO: Remove all TODO comments before submitting.
 }
