@@ -3,6 +3,7 @@ package main;
 import browser.NgordnetServer;
 import org.slf4j.LoggerFactory;
 
+
 public class Main {
     static {
         LoggerFactory.getLogger(Main.class).info("\033[1;38mChanging text color to white");

@@ -1,0 +1,54 @@
+InsertRandomSpeedTest
+Enter # strings to insert into ULLMap: 887777
+--Stack Overflow -- couldn't add 887777 strings of length 20.
+
+Enter # strings to insert into your MyHashMap: 887777
+MyHashMap: 0.55 sec
+
+Enter # strings to insert into Java's HashMap: 887777
+Java's Built-in HashMap: 0.30 sec
+
+ULLMap在数据规模较大时性能表现不佳,可能不适合在高并发、大数据量的场景下使用。其基于链表的实现在插入和查找操作上的时间复杂度较高。
+MyHashMap展现出了不错的性能表现,在大规模数据下仍然能够正常工作,插入操作的耗时增长也比较平缓。这说明基于散列表的实现能够较好地处理大数据量。
+Java内置HashMap无疑是性能最好的,这得益于其成熟的优化措施,例如在散列冲突较多时会自动扩容、使用红黑树来提高查找效率等。不过MyHashMap能达到内置实现的45%的性能,已经是比较不错的结果。
+
+InsertInOrderSpeedTest
+Enter # strings to insert into ULLMap: 889999
+--Stack Overflow -- couldn't add 889999 strings.
+
+Enter # strings to insert into MyHashMap: 889999
+MyHashMap: 0.43 sec
+
+Enter # strings to insert into Java's HashMap: 889999
+Java's Built-in HashMap: 0.23 sec
+
+对于HashMap来说,插入有序键和随机键的性能差异并不显著。这是因为HashMap的散列函数能够较好地将有序键分散到不同的桶中,避免了过多的散列冲突。相比之下,TreeMap等基于比较的Map实现对键的有序性更敏感,插入有序键时性能会明显下降。
+在插入有序键的场景下,MyHashMap的性能约为Java内置HashMap的53%,比插入随机键时的45%还要好。这进一步证实了MyHashMap散列函数的有效性,以及在散列冲突处理、扩容等方面的优化是成功的。
+尽管如此,Java内置HashMap凭借更加完备的性能优化,在绝对速度上仍然占优。这启示我们在HashMap的实现中还有一些值得优化的地方,例如在散列函数、扩容策略、散列冲突解决等方面进一步改进。
+
+综合InsertRandomSpeedTest和InsertInOrderSpeedTest的结果,我们可以得出以下HashMap和TreeMap的性能权衡:
+对于键的有序性不敏感、主要考虑插入和查找性能的场景,HashMap通常是更好的选择。其散列实现使得插入和查找的平均时间复杂度接近O(1),而TreeMap基于红黑树实现,插入和查找的平均时间复杂度为O(log n)。
+如果需要保持键的有序性,并且频繁进行键的顺序遍历、范围查找等操作,TreeMap会更加合适。HashMap中键的顺序是无法保证的,而TreeMap可以实现键的有序遍历。
+在数据规模较小、性能要求不高的场景下,HashMap和TreeMap的性能差异可能并不明显。而在大规模、高并发的场景下,HashMap凭借更优的渐进性能,通常会成为首选。
+
+
+BucketsSpeedTest
+What would you like L to be?: 30
+Enter # strings to insert into each map: 887777
+MyHashMap with ArrayList buckets: 0.80 sec
+MyHashMap with LinkedList buckets: 0.82 sec
+MyHashMap with HashSet buckets: 1.25 sec
+MyHashMap with Stack buckets: 0.88 sec
+MyHashMap with ArrayDeque buckets: 0.93 sec
+性能差异原因分析:
+
+ArrayList和LinkedList的性能最好,这可能是因为它们的内存布局比较紧凑,内存利用率高,缓存友好。它们在插入元素时的时间复杂度也比较低(平均O(1))。
+HashSet的性能最差,可能有以下几个原因:
+HashSet需要为每个元素计算散列值,而ArrayList和LinkedList不需要。
+HashSet需要额外的空间来存储散列表,空间利用率低于ArrayList和LinkedList。
+我们在判断一个元素是否在HashSet中时,需要遍历整个Set,时间复杂度为O(n)。相比之下,ArrayList和LinkedList虽然也需要遍历,但它们的缓存局部性更好,实际表现可能优于HashSet。
+Stack和ArrayDeque的性能介于两者之间,这可能是因为它们在插入元素时需要移动其他元素,时间复杂度略高于ArrayList和LinkedList,但它们不需要计算散列值,因此比HashSet要快。
+
+如果我们能利用HashSet的常数时间查找特性,将判断一个元素是否在桶中的时间复杂度从O(n)降低到O(1),无疑会大大提高HashMap的整体性能。
+从渐进复杂度的角度看,如果桶的实现支持常数时间查找,那么HashMap的get、put、containsKey等操作的平均时间复杂度都有望从O(n)提升到O(1),其中n是桶的平均大小。这将是一个质的飞跃。
+参考Java内置HashMap的实现,我们可以考虑在桶的元素数量超过某个阈值时,将桶的实现从ArrayList/LinkedList替换为HashSet,以获得更好的查找性能。同时,我们也可以优化HashSet的散列函数,以减少散列冲突,提高空间利用率。
