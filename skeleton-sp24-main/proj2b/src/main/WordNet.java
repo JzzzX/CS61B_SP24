@@ -104,13 +104,16 @@ public class WordNet {
         }
         // 获取这个词对应的所有同义词集ID
         Set<Integer> startIds = wordToIds.get(word);
-
         // 从这些ID出发，找到所有可达节点
         Set<Integer> reachableIds = new HashSet<>();
+        reachableIds.addAll(startIds);
+
+        Set<Integer> currentVisited = new HashSet<>();
         for (int startId : startIds) {
-            // 对每个起始ID，进行图的遍历
-            // 使用 graph 的 getNeighbors 方法找到所有可达节点
-            dfs(startId, reachableIds);
+            currentVisited.clear();  // 每次DFS前清空访问记录
+            currentVisited.add(startId);
+            dfs(startId, currentVisited);
+            reachableIds.addAll(currentVisited);
         }
 
         // 将可达节点对应的词收集起来
@@ -129,12 +132,11 @@ public class WordNet {
      * @param visited 存储已访问节点的集合
      */
     private void dfs(int v, Set<Integer> visited) {
-        // 将当前节点标记为已访问
-        visited.add(v);
-        // 访问所有未访问的邻居节点
+        // 访问所有邻居节点
         for (int neighbor : graph.getNeighbors(v)) {
             // 如果邻居节点未被访问过，则递归访问它
             if (!visited.contains(neighbor)) {
+                visited.add(neighbor);
                 dfs(neighbor, visited);
             }
         }

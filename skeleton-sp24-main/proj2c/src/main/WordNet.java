@@ -104,13 +104,16 @@ public class WordNet {
         }
         // 获取这个词对应的所有同义词集ID
         Set<Integer> startIds = wordToIds.get(word);
-
         // 从这些ID出发，找到所有可达节点
         Set<Integer> reachableIds = new HashSet<>();
+        reachableIds.addAll(startIds);
+
+        Set<Integer> currentVisited = new HashSet<>();
         for (int startId : startIds) {
-            // 对每个起始ID，进行图的遍历
-            // 使用 graph 的 getNeighbors 方法找到所有可达节点
-            dfs(startId, reachableIds);
+            currentVisited.clear();  // 每次DFS前清空访问记录
+            currentVisited.add(startId);
+            dfs(startId, currentVisited);
+            reachableIds.addAll(currentVisited);
         }
 
         // 将可达节点对应的词收集起来
@@ -129,12 +132,11 @@ public class WordNet {
      * @param visited 存储已访问节点的集合
      */
     private void dfs(int v, Set<Integer> visited) {
-        // 将当前节点标记为已访问
-        visited.add(v);
-        // 访问所有未访问的邻居节点
+        // 访问所有邻居节点
         for (int neighbor : graph.getNeighbors(v)) {
             // 如果邻居节点未被访问过，则递归访问它
             if (!visited.contains(neighbor)) {
+                visited.add(neighbor);
                 dfs(neighbor, visited);
             }
         }
@@ -166,4 +168,69 @@ public class WordNet {
 
         return result;
     }
+
+
+    /**
+     * 获取单个词的所有祖先节点
+     * @param word 要查询的词
+     * @return 包含所有祖先词的集合
+     */
+    public Set<String> getAncestors(String word) {
+        if (word == null || !wordToIds.containsKey(word)) {
+            throw new IllegalArgumentException("Word does not exist in WordNet");
+        }
+
+        // 获取这个词对应的所有同义词集ID
+        Set<Integer> startIds = wordToIds.get(word);
+
+        // 从这些ID出发，找到所有可达的祖先节点
+        Set<Integer> ancestorIds = new HashSet<>();
+        for (int startId : startIds) {
+            dfsAncestors(startId, ancestorIds);
+        }
+
+        // 将可达节点对应的词收集起来
+        Set<String> ancestors = new HashSet<>();
+        for (int id : ancestorIds) {
+            ancestors.addAll(idToWords.get(id));
+        }
+
+        return ancestors;
+    }
+    /**
+     * 向上遍历图查找祖先节点的辅助方法
+     */
+    private void dfsAncestors(int v, Set<Integer> visited) {
+        visited.add(v);
+        for (int parent : graph.getParents(v)) {
+            if (!visited.contains(parent)) {
+                dfsAncestors(parent, visited);
+            }
+        }
+    }
+
+
+    /**
+     * 获取多个词的共同祖先
+     * @param words 要查询的词列表
+     * @return 包含所有共同祖先的集合
+     */
+    public Set<String> getCommonAncestors(List<String> words) {
+        if (words == null || words.isEmpty()) {
+            throw new IllegalArgumentException("Words list cannot be null or empty");
+        }
+
+        // 获取第一个词的祖先作为初始结果集
+        Set<String> result = getAncestors(words.get(0));
+
+        // 遍历剩余的词，求交集
+        for (int i = 1; i < words.size(); i++) {
+            Set<String> currentAncestors = getAncestors(words.get(i));
+            result.retainAll(currentAncestors);  // 取交集
+        }
+
+        return result;
+    }
+
+
 }

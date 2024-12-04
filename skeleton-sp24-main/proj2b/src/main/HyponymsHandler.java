@@ -23,6 +23,10 @@ public class HyponymsHandler extends NgordnetQueryHandler {
         wordnet = new WordNet(synsetsFile, hyponymsFile);
     }
 
+    public HyponymsHandler(WordNet wordnet) {
+        super();
+    }
+
     @Override
     public String handle (NgordnetQuery query) {
         // 从 query 中获取查询参数
@@ -52,7 +56,7 @@ public class HyponymsHandler extends NgordnetQueryHandler {
 
         // 遍历排序后的列表，构建结果字符串
         for (int i = 0; i < sortResults.size(); i++) {
-            result.append("\"").append(sortResults.get(i)).append("\"");
+            result.append(sortResults.get(i));
             // 如果不是最后一个元素，添加逗号和空格
             if (i < sortResults.size() - 1) {
                 result.append(", ");
