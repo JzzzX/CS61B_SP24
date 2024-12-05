@@ -21,7 +21,7 @@ public class BoringWorldDemo {
         TETile[][] world = new TETile[WIDTH][HEIGHT];
         for (int x = 0; x < WIDTH; x++) {
             for (int y = 0; y < HEIGHT; y++) {
-                world[x][y] = Tileset.NOTHING;
+                world[x][y] = Tileset.FLOWER;
             }
         }
 
